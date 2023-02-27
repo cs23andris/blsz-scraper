@@ -3,13 +3,14 @@ import requests
 import re
 import datetime
 from game import Game
+from gcsa.event import Event
 
 class BlszScraper:
 
-    def __init__(self, a_team_schedule_url, b_team_schedule_url=None) -> None:
-        self.a_team_schedule_url = a_team_schedule_url
-        if b_team_schedule_url:
-            self.b_team_schedule_url = b_team_schedule_url
+    def __init__(self, team_schedule_url, division, attendees) -> None:
+        self.team_schedule_url = team_schedule_url
+        self.division = division
+        self.attendees = attendees
 
     def get_soup_from_url(self, url: str) -> object:  
         """Returns BeautifulSoup object from url or static html"""
@@ -21,7 +22,7 @@ class BlszScraper:
         return soup
 
     def get_schedule_table(self) -> list:
-        a_team_schedule_soup = self.get_soup_from_url(self.a_team_schedule_url)
+        a_team_schedule_soup = self.get_soup_from_url(self.team_schedule_url)
 
         schedule_table = a_team_schedule_soup.findAll("div", attrs={"class":"schedule"})
         
@@ -40,9 +41,9 @@ class BlszScraper:
         data["date"] = date
         data["venue"] = venue
 
-        game = Game(*data)
+        #game = Game(*data)
 
-        return game
+        return data
 
     def create_game_list(self, schedule_table, max_results=100):
             
@@ -62,34 +63,56 @@ class BlszScraper:
         end_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         loc = game_dict.get("venue")
 
-        game_event = {
+        event_data = {
             'summary': summary,
-            'description': 'Blsz II. 1.csoport',
+            'description': self.division,
             'location': loc,
-            'start': {
-                'dateTime': start_str,
-                'timeZone': "Europe/Budapest"
-            },
-            'end': {
-                'dateTime': end_str,
-                'timeZone': "Europe/Budapest"
-            },
-            'extendedProperties': {
-                'public': {
-                    'scraper_automatic_event': "yes"
-                }
-            }
+            'start': start_datetime,
+            'end': end_datetime,
+            'attendees': self.attendees
+            # 'start': {
+            #     'dateTime': start_str,
+            #     'timeZone': "Europe/Budapest"
+            # },
+            # 'end': {
+            #     'dateTime': end_str,
+            #     'timeZone': "Europe/Budapest"
+            # }
+            # ,
+            # 'extendedProperties': {
+            #     'public': {
+            #         'scraper_automatic_event': "yes"
+            #     }
+            # }
         }
 
-        print(game_event)
+        #print(event_data)
+        gc_event = Event(**event_data)
+        #print(gc_event)
 
-        return game_event
+        return gc_event
+    
+    def prepare_all(self, year_filter: int) -> list:
+        
+        schedule_table = self.get_schedule_table()
+        game_list = self.create_game_list(schedule_table)
+        prepared_events = []
+        for game in game_list:
+            game_event = self.prepare_game_event(game)
+            print(game_event, type(game_event.start.year), type(year_filter))
+            if game_event.start.year == year_filter:
+                
+                prepared_events.append(game_event)
+            
+        return prepared_events
+        
 
 if __name__ == "__main__":
     print("Getting schedule table...")
-    a_team_schedule_url = "https://adatbank.mlsz.hu/club/59/5/25606/2/249120.html"
-    blsz_scraper = BlszScraper(a_team_schedule_url)
-    game_list = blsz_scraper.get_schedule_table()
-    for game in game_list:
-        game_event = blsz_scraper.prepare_game_event(game)
+    team_schedule_url = "https://adatbank.mlsz.hu/club/59/5/25606/2/249120.html"
+    blsz_scraper = BlszScraper(team_schedule_url, "Blsz II. 1.csoport")
+    # schedule_table = blsz_scraper.get_schedule_table()
+    # game_list = blsz_scraper.create_game_list(schedule_table)
+    print(blsz_scraper.prepare_all())
+    
 

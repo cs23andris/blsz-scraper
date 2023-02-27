@@ -1,4 +1,5 @@
 import datetime
+from gcsa.event import Event
 
 class Game:
 
@@ -7,7 +8,7 @@ class Game:
         self.away_team = away_team
         self.venue = venue
         self.date = date
-        self.desc = "Blsz II. 1.csoport"
+        self.desc = desc
         self.start_datetime = datetime.datetime.strptime(self.date, "%Y. %m. %d.  %H:%M")
         self.start_str = self.start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         self.end_datetime = self.start_datetime + datetime.timedelta(hours=2)
@@ -38,3 +39,10 @@ class Game:
         print(game_event)
 
         return game_event
+
+    def from_event(google_calendar_event: Event):
+        summary = google_calendar_event.summary
+        event_id = google_calendar_event.id
+        location = google_calendar_event.location
+        start = google_calendar_event.start
+        end = google_calendar_event.end

@@ -129,7 +129,10 @@ dmypy.json
 .pyre/
 
 # Pyre type checker
-/.credentials
+
 
 .DS_Store
 
+# google calendar access tokens
+/.credentials
+token.json
