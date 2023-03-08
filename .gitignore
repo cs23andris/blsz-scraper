@@ -136,3 +136,7 @@ dmypy.json
 # google calendar access tokens
 /.credentials
 token.json
+
+
+#config
+/app/config.yaml

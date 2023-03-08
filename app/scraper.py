@@ -62,14 +62,30 @@ class BlszScraper:
         end_datetime = start_datetime + datetime.timedelta(hours=2)
         end_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         loc = game_dict.get("venue")
+        
+        arrival_datetime_str = (start_datetime + datetime.timedelta(minutes=-75)).strftime("%H:%M")
+        steward_datetime_str = (start_datetime + datetime.timedelta(minutes=-45)).strftime("%H:%M")
+        
+        if game_dict.get('home_team') == "XII. KERÜLET SVÁBHEGY FC":
+            description = f"""{self.division} bajnoki mérkőzés 
+            \nÉrkezés játékosoknak: {arrival_datetime_str}\nÉrkezés rendezőknek: {steward_datetime_str}
+            \nTALÁLKOZÓ A MEGBESZÉLT IDŐBEN A MEGBESZÉLT HELYEN!
+            """
+        else:
+            description = f"""{self.division} bajnoki mérkőzés 
+            \nÉrkezés játékosoknak: {arrival_datetime_str}
+            \nTALÁLKOZÓ A MEGBESZÉLT IDŐBEN A MEGBESZÉLT HELYEN!"""
 
         event_data = {
             'summary': summary,
-            'description': self.division,
+            'description': description,
             'location': loc,
             'start': start_datetime,
             'end': end_datetime,
-            'attendees': self.attendees
+            'attendees': self.attendees,
+            'default_reminders': True
+            # 'minutes_before_popup_reminder': 60*24,
+            # 'minutes_before_email_reminder': 60*48
             # 'start': {
             #     'dateTime': start_str,
             #     'timeZone': "Europe/Budapest"
@@ -99,9 +115,8 @@ class BlszScraper:
         prepared_events = []
         for game in game_list:
             game_event = self.prepare_game_event(game)
-            print(game_event, type(game_event.start.year), type(year_filter))
+            #print(game_event)
             if game_event.start.year == year_filter:
-                
                 prepared_events.append(game_event)
             
         return prepared_events
