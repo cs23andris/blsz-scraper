@@ -54,7 +54,7 @@ class BlszScraper:
 
         return list_of_games
 
-    def prepare_game_event(self, game_dict):
+    def prepare_game_event(self, game_dict) -> Event:
 
         summary = f"{game_dict.get('home_team')} - {game_dict.get('away_team')}"
         start_datetime = datetime.datetime.strptime(game_dict.get("date"), "%Y. %m. %d.  %H:%M")
