@@ -4,17 +4,17 @@ from app import utils
 
 def test_config_parser_with_path():
     expected_result = {
-        "sender_mail": "andras.csillag.tech@gmail.com",
+        "sender_mail": "sender@gmail.com",
         "schedules": [
             {
-                "team_name": "Svábhegy FC",
+                "team_name": "SFC",
                 "division": "Blsz II. 1.csoport",
                 "url": "https://adatbank.mlsz.hu/club/61/5/27291/5/268004.html",
-                "attendees_test": ["cs23andris@gmail.com", "anna.e.pomazi@gmail.com"],
+                "attendees_test": ["test1@gmail.com", "test2@gmail.com"],
                 "attendees_prod": [
-                    "cs23andris@gmail.com",
-                    "anna.e.pomazi@gmail.com",
-                    "andras.csillag@datapao.com",
+                    "test1@gmail.com",
+                    "test2@gmail.com",
+                    "prod2@gmail.com",
                 ],
             }
         ],
@@ -29,17 +29,17 @@ def test_config_parser_without_path(monkeypatch):
     result = utils.config_parser()
 
     expected_result = {
-        "sender_mail": "andras.csillag.tech@gmail.com",
+        "sender_mail": "sender@gmail.com",
         "schedules": [
             {
-                "team_name": "Svábhegy FC",
+                "team_name": "SFC",
                 "division": "Blsz II. 1.csoport",
                 "url": "https://adatbank.mlsz.hu/club/61/5/27291/5/268004.html",
-                "attendees_test": ["cs23andris@gmail.com", "anna.e.pomazi@gmail.com"],
+                "attendees_test": ["test1@gmail.com", "test2@gmail.com"],
                 "attendees_prod": [
-                    "cs23andris@gmail.com",
-                    "anna.e.pomazi@gmail.com",
-                    "andras.csillag@datapao.com",
+                    "test1@gmail.com",
+                    "test2@gmail.com",
+                    "prod2@gmail.com",
                 ],
             }
         ],

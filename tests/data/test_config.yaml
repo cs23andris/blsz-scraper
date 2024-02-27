@@ -1,0 +1,12 @@
+sender_mail: sender@gmail.com
+schedules:
+  - team_name: SFC
+    division: Blsz II. 1.csoport
+    url: https://adatbank.mlsz.hu/club/61/5/27291/5/268004.html
+    attendees_test:
+      - test1@gmail.com
+      - test2@gmail.com
+    attendees_prod:
+      - test1@gmail.com
+      - test2@gmail.com
+      - prod2@gmail.com
