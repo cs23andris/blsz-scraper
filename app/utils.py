@@ -27,6 +27,7 @@ def config_parser(pathname: str = None) -> dict:
 
 def get_config_by_team(parsed_config: dict, team_name: str) -> dict:
     """This function is used to get the config for a specific team from the parsed config file."""
+    
     return [
         schedule
         for schedule in parsed_config["schedules"]
@@ -36,6 +37,7 @@ def get_config_by_team(parsed_config: dict, team_name: str) -> dict:
 
 def get_credentials_path() -> str:
     """This function is used to get the path of the credentials file for the google calendar authentication."""
+    
     base_path = os.path.dirname(os.path.abspath(__file__)).removesuffix("/app")
     credentials_path = os.path.join(base_path, ".credentials", "credentials.json")
     return credentials_path

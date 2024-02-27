@@ -2,3 +2,4 @@ gcsa
 beautifulsoup4
 PyYAML~=6.0
 pytest
+python-dotenv
