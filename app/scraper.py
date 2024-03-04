@@ -1,52 +1,66 @@
-from bs4 import BeautifulSoup
 import requests
-import re
 import datetime
-from game import Game
+
+from bs4 import BeautifulSoup, ResultSet, Tag
 from gcsa.event import Event
 
+from app.game import Game
+
+
 class BlszScraper:
+    """Class for scraping the fixture schedule of a team from the MLSZ Adatbank website"""
 
-    def __init__(self, team_schedule_url, division, attendees) -> None:
+    def __init__(self, team_schedule_url: str) -> None:
+        """Initializes the BlszScraper object
+
+        :param team_schedule_url: The URL from where the fixture schedule can be scraped
+        """
         self.team_schedule_url = team_schedule_url
-        self.division = division
-        self.attendees = attendees
+        self.soup = self.get_soup_from_url(self.team_schedule_url)
+        self.division = self.get_division()
 
-    def get_soup_from_url(self, url: str) -> object:  
+    def get_soup_from_url(self, url: str) -> BeautifulSoup:
         """Returns BeautifulSoup object from url or static html"""
 
         r = requests.get(url)
         r.raise_for_status()
-        soup = BeautifulSoup(r.content, 'html.parser')
+        soup = BeautifulSoup(r.content, "html.parser")
 
         return soup
 
-    def get_schedule_table(self) -> list:
-        a_team_schedule_soup = self.get_soup_from_url(self.team_schedule_url)
+    def get_schedule_table(self) -> ResultSet[Tag]:
+        """Returns the schedule table from the team schedule page as a ResultSet of Tag objects"""
 
-        schedule_table = a_team_schedule_soup.findAll("div", attrs={"class":"schedule"})
-        
+        schedule_table = self.soup.findAll("div", attrs={"class": "schedule"})
         return schedule_table
 
-    def get_match_data(self, fixture_div):
-        data = {}
+    def get_division(self) -> str:
+        """Gets division from the team schedule page"""
 
-        home_team = fixture_div.find("div", attrs={"class":"home_team"}).get_text()
-        away_team = fixture_div.find("div", attrs={"class":"away_team"}).get_text()
-        date = fixture_div.find("div", attrs={"class":"team_sorsolas_date"}).get_text()
-        venue = fixture_div.find("div", attrs={"class":"team_sorsolas_arena"}).get_text()
+        return self.soup.select_one(".team_tabella .container_title").get_text().strip()
 
-        data["home_team"] = home_team
-        data["away_team"] = away_team
-        data["date"] = date
-        data["venue"] = venue
+    def get_match_data(self, fixture_div: Tag) -> Game:
+        """From a fixture div, returns a dictionary with the match data"""
 
-        #game = Game(*data)
+        home_team = fixture_div.find("div", attrs={"class": "home_team"}).get_text()
+        away_team = fixture_div.find("div", attrs={"class": "away_team"}).get_text()
+        date = fixture_div.find("div", attrs={"class": "team_sorsolas_date"}).get_text()
+        venue = fixture_div.find(
+            "div", attrs={"class": "team_sorsolas_arena"}
+        ).get_text()
 
-        return data
+        return Game(home_team, away_team, venue, date, self.division)
 
-    def create_game_list(self, schedule_table, max_results=100):
-            
+    def get_game_list(
+        self, schedule_table: ResultSet[Tag], max_results: int = 100
+    ) -> list[Game]:
+        """Creates a list of Game objects from the schedule table
+
+        :param schedule_table: The schedule table tag from the team schedule page
+        :param max_results: Max results count, defaults to 100
+        :return: A list of Game objects
+        """
+
         list_of_games = []
         for fixture in schedule_table[:max_results]:
             game = self.get_match_data(fixture)
@@ -54,80 +68,32 @@ class BlszScraper:
 
         return list_of_games
 
-    def prepare_game_event(self, game_dict) -> Event:
+    def fetch_games(
+        self, year_filter: int = None, max_results: int = 100
+    ) -> list[Game]:
+        """Fetches the game list from the team schedule page
 
-        summary = f"{game_dict.get('home_team')} - {game_dict.get('away_team')}"
-        start_datetime = datetime.datetime.strptime(game_dict.get("date"), "%Y. %m. %d.  %H:%M")
-        start_str = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        end_datetime = start_datetime + datetime.timedelta(hours=2)
-        end_str = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        loc = game_dict.get("venue")
-        
-        arrival_datetime_str = (start_datetime + datetime.timedelta(minutes=-75)).strftime("%H:%M")
-        steward_datetime_str = (start_datetime + datetime.timedelta(minutes=-45)).strftime("%H:%M")
-        
-        if game_dict.get('home_team') == "XII. KERÜLET SVÁBHEGY FC":
-            description = f"""{self.division} bajnoki mérkőzés 
-            \nÉrkezés játékosoknak: {arrival_datetime_str}\nÉrkezés rendezőknek: {steward_datetime_str}
-            \nTALÁLKOZÓ A MEGBESZÉLT IDŐBEN A MEGBESZÉLT HELYEN!
-            """
-        else:
-            description = f"""{self.division} bajnoki mérkőzés 
-            \nÉrkezés játékosoknak: {arrival_datetime_str}
-            \nTALÁLKOZÓ A MEGBESZÉLT IDŐBEN A MEGBESZÉLT HELYEN!"""
+        :param max_results: Max results count, defaults to 100
+        :return: A list of Game objects
+        """
 
-        event_data = {
-            'summary': summary,
-            'description': description,
-            'location': loc,
-            'start': start_datetime,
-            'end': end_datetime,
-            'attendees': self.attendees,
-            'default_reminders': True
-            # 'minutes_before_popup_reminder': 60*24,
-            # 'minutes_before_email_reminder': 60*48
-            # 'start': {
-            #     'dateTime': start_str,
-            #     'timeZone': "Europe/Budapest"
-            # },
-            # 'end': {
-            #     'dateTime': end_str,
-            #     'timeZone': "Europe/Budapest"
-            # }
-            # ,
-            # 'extendedProperties': {
-            #     'public': {
-            #         'scraper_automatic_event': "yes"
-            #     }
-            # }
-        }
-
-        #print(event_data)
-        gc_event = Event(**event_data)
-        #print(gc_event)
-
-        return gc_event
-    
-    def prepare_all(self, year_filter: int) -> list:
-        
         schedule_table = self.get_schedule_table()
-        game_list = self.create_game_list(schedule_table)
-        prepared_events = []
+        game_list = self.get_game_list(schedule_table, max_results)
+        result = []
         for game in game_list:
-            game_event = self.prepare_game_event(game)
-            #print(game_event)
-            if game_event.start.year == year_filter:
-                prepared_events.append(game_event)
-            
-        return prepared_events
-        
+            if (
+                year_filter is not None and game.start_datetime.year == year_filter
+            ) or year_filter is None:
+                result.append(game)
+
+        return result
+
 
 if __name__ == "__main__":
+    pass
     print("Getting schedule table...")
     team_schedule_url = "https://adatbank.mlsz.hu/club/59/5/25606/2/249120.html"
     blsz_scraper = BlszScraper(team_schedule_url, "Blsz II. 1.csoport")
     # schedule_table = blsz_scraper.get_schedule_table()
     # game_list = blsz_scraper.create_game_list(schedule_table)
     print(blsz_scraper.prepare_all())
-    
-
