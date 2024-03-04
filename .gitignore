@@ -139,6 +139,7 @@ token.json
 
 
 #config
+app/config.yaml
 /app/config.yaml
 
 /tests/data/test_adatbank_files
