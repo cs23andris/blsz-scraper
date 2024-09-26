@@ -11,7 +11,7 @@ from app.utils import config_parser, get_config_by_team, get_credentials_path
 from app.game_event_processor import GameEventProcessor
 from app.scraper import BlszScraper
 
-load_dotenv()
+load_dotenv(override=True)
 HOME_TEAM_NAME = os.getenv("TEAM_NAME")
 SENDER_MAIL = os.getenv("SENDER_MAIL")
 

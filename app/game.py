@@ -124,7 +124,6 @@ class Game:
         }
 
         gc_event = Event(**game_event_data)
-        print(gc_event)
 
         return gc_event
 

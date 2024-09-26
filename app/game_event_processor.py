@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from app.game import Game
 
-load_dotenv()
+load_dotenv(override=True)
 HOME_TEAM_NAME = os.getenv("TEAM_NAME")
 
 
@@ -63,7 +63,7 @@ class GameEventProcessor:
         :param dry_run: Dry run flag, only prints if set to True, defaults to False
         """
 
-        for game_event in self.gc_client.get_events(query="Svábhegy FC"):
+        for game_event in self.gc_client.get_events(query=HOME_TEAM_NAME):
             if game_event.start > datetime.now(game_event.start.tzinfo):
                 print(f"Deleting event: {game_event} in dry_run mode: {dry_run}")
                 if not dry_run:
@@ -75,8 +75,8 @@ class GameEventProcessor:
         :param apply_date_filter: Flag to apply date filter for the games, defaults to False
         :return: List of games from Google Calendar
         """
-
-        games = self.gc_client.get_events(query="Svábhegy FC")
+        print(f"Getting events from Google Calendar for '{HOME_TEAM_NAME}'")
+        games = self.gc_client.get_events(query=HOME_TEAM_NAME)
         if apply_date_filter:
             return [
                 game for game in games if game.start > datetime.now(game.start.tzinfo)
