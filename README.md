@@ -3,7 +3,8 @@ Scraping adatbank.mlsz.hu fixture schedule and creating google calendar events f
 
 
 # Common errors
-If you see google calendar authentication related errors when running the application, a common solution is to delete the token pickle file and re-run the application which will force you to allow permissions to the application again and generates a new pickle file.
+If you see google calendar authentication related errors when running the application, a common solution is to delete the token pickle file from the .credentials folder and re-run the application which will force you to allow permissions to the application again and generates a new pickle file.
+Apply year filter on main.py line 49 to avoid scraping all the years.
 
 # How to run
 

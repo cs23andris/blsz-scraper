@@ -46,9 +46,9 @@ def main():
 
     if run_mode == "C":
         print("Creating events...")
-        games = blsz_scraper.fetch_games(year_filter=2024)
+        games = blsz_scraper.fetch_games(year_filter=2025)
         gep.create_game_events(
-            games[:limit], attendees=a_team_config["attendees_test"], dry_run=dry_run
+            games[:limit], attendees=a_team_config["attendees_2024"], dry_run=dry_run
         )
     elif run_mode == "R":
         print("Reading events from the calendar...")
